@@ -1,0 +1,143 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2709
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\margl1440\margr1440\vieww30040\viewh17760\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 Sub StockMarketAnalysis()\
+\
+    Dim ws As Worksheet\
+    Dim lastRow As Long\
+    Dim i As Long\
+    Dim summaryRow As Integer\
+    Dim ticker As String\
+    Dim openPrice As Double\
+    Dim closePrice As Double\
+    Dim quarterlyChange As Double\
+    Dim percentChange As Double\
+    Dim totalVolume As Double\
+    Dim greatestIncrease As Double\
+    Dim greatestDecrease As Double\
+    Dim greatestVolume As Double\
+    Dim greatestIncreaseTicker As String\
+    Dim greatestDecreaseTicker As String\
+    Dim greatestVolumeTicker As String\
+    \
+    ' Loop through all worksheets (each quarter)\
+    For Each ws In ThisWorkbook.Sheets\
+        \
+        ' Find the last row in the current worksheet\
+        lastRow = ws.Cells(Rows.Count, 1).End(xlUp).Row\
+        \
+        ' Initialize variables\
+        summaryRow = 2\
+        totalVolume = 0\
+        openPrice = ws.Cells(2, 3).Value ' First open price\
+        greatestIncrease = -1000000\
+        greatestDecrease = 1000000\
+        greatestVolume = 0\
+\
+        ' Add headers for summary table\
+        ws.Cells(1, 9).Value = "Ticker"\
+        ws.Cells(1, 10).Value = "Quarterly Change ($)"\
+        ws.Cells(1, 11).Value = "Percent Change (%)"\
+        ws.Cells(1, 12).Value = "Total Stock Volume"\
+\
+        ' Loop through all rows\
+        For i = 2 To lastRow\
+            ' Check if the ticker changes (new stock)\
+            If ws.Cells(i + 1, 1).Value <> ws.Cells(i, 1).Value Then\
+                \
+                ' Capture ticker symbol\
+                ticker = ws.Cells(i, 1).Value\
+                \
+                ' Capture closing price\
+                closePrice = ws.Cells(i, 6).Value\
+                \
+                ' Ensure valid prices before calculation\
+                If openPrice <> 0 And closePrice <> 0 Then\
+                    ' Calculate quarterly change\
+                    quarterlyChange = closePrice - openPrice\
+\
+                    ' Calculate percent change\
+                    percentChange = (quarterlyChange / openPrice) * 100\
+                Else\
+                    quarterlyChange = 0\
+                    percentChange = 0\
+                End If\
+                \
+                ' Capture total stock volume\
+                totalVolume = totalVolume + ws.Cells(i, 7).Value\
+                \
+                ' Write to summary table\
+                ws.Cells(summaryRow, 9).Value = ticker\
+                ws.Cells(summaryRow, 10).Value = quarterlyChange\
+                ws.Cells(summaryRow, 11).Value = percentChange\
+                ws.Cells(summaryRow, 12).Value = totalVolume\
+                \
+                ' Format the percentage change correctly\
+                ws.Cells(summaryRow, 11).NumberFormat = "0.00%"\
+\
+                ' Format the total volume (remove scientific notation)\
+                ws.Cells(summaryRow, 12).NumberFormat = "#,##0"\
+\
+                ' Apply conditional formatting\
+                If quarterlyChange >= 0 Then\
+                    ws.Cells(summaryRow, 10).Interior.Color = RGB(0, 255, 0) ' Green for positive change\
+                Else\
+                    ws.Cells(summaryRow, 10).Interior.Color = RGB(255, 0, 0) ' Red for negative change\
+                End If\
+\
+                ' Track greatest % increase, % decrease, and total volume\
+                If percentChange > greatestIncrease Then\
+                    greatestIncrease = percentChange\
+                    greatestIncreaseTicker = ticker\
+                End If\
+                \
+                If percentChange < greatestDecrease Then\
+                    greatestDecrease = percentChange\
+                    greatestDecreaseTicker = ticker\
+                End If\
+                \
+                If totalVolume > greatestVolume Then\
+                    greatestVolume = totalVolume\
+                    greatestVolumeTicker = ticker\
+                End If\
+\
+                ' Reset total volume and open price for next ticker\
+                totalVolume = 0\
+                openPrice = ws.Cells(i + 1, 3).Value\
+                summaryRow = summaryRow + 1\
+                \
+            Else\
+                ' Accumulate total volume\
+                totalVolume = totalVolume + ws.Cells(i, 7).Value\
+            End If\
+        Next i\
+        \
+        ' Output the greatest % increase, % decrease, and total volume\
+        ws.Cells(2, 15).Value = "Greatest % Increase"\
+        ws.Cells(3, 15).Value = "Greatest % Decrease"\
+        ws.Cells(4, 15).Value = "Greatest Total Volume"\
+        \
+        ws.Cells(2, 16).Value = greatestIncreaseTicker\
+        ws.Cells(3, 16).Value = greatestDecreaseTicker\
+        ws.Cells(4, 16).Value = greatestVolumeTicker\
+        \
+        ws.Cells(2, 17).Value = greatestIncrease / 100 ' Convert to percentage format\
+        ws.Cells(3, 17).Value = greatestDecrease / 100 ' Convert to percentage format\
+        ws.Cells(4, 17).Value = greatestVolume\
+        \
+        ' Apply formatting to percentages and total volume\
+        ws.Cells(2, 17).NumberFormat = "0.00%"\
+        ws.Cells(3, 17).NumberFormat = "0.00%"\
+        ws.Cells(4, 17).NumberFormat = "#,##0"\
+\
+    Next ws\
+    \
+    MsgBox "Stock Analysis Completed!"\
+\
+End Sub\
+\
+}
