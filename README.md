@@ -16,7 +16,7 @@ How to Run
 4️⃣ View the results in the worksheet
 
 Files Included
-📄 StockMarketAnalysis.xlsm → Excel doc
+📄 Megan_Neal - StockMarketAnalysis.xlsm → Excel doc
 📄 vba.txt → VBA script
 📷 screenshot.png → Results Screenshot
 📄 README.md → This file
